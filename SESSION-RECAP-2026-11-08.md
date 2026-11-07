@@ -14,8 +14,8 @@ diperbaiki, dan apa yang masih menggantung.
 | Build debug APK | **Sukses**, 17,9 MB, tanpa error |
 | Jalan di emulator | **Sukses** — `Medium_Phone_API_37.0`, nol crash (`logcat AndroidRuntime:E` kosong) |
 | Audit keterbacaan skala 1,5× | **Lulus** semua 8 layar, nol teks terpotong |
-| Commit | `11b7093` (recap) + `a267a8b` (aplikasi) di branch `main`, working tree bersih |
-| **Push ke GitHub** | **SELESAI** — `origin/main` = `11b7093`, 52 file ter-upload |
+| Commit | `7bb91b0` (recap final) + `a267a8b` (aplikasi) di branch `main`, working tree bersih |
+| **Push ke GitHub** | **SELESAI** — `origin/main` = `7bb91b0`, 52 file ter-upload |
 | `.gitignore` | Sudah lengkap, nol artefak build ter-stage |
 
 ---
@@ -130,7 +130,7 @@ tombol **"Lihat N warga lainnya"** di Beranda (dulu hanya 3 kartu tanpa jalan ke
 
 ## 7. Push GitHub: SELESAI (dengan catatan penting)
 
-Remote `main` sekarang di **`11b7093`**, repo publik:
+Remote `main` sekarang di **`7bb91b0`**, repo publik:
 https://github.com/oxyrus69/PosyanduKu (52 file, termasuk `SESSION-RECAP-2026-11-08.md` ini).
 
 Penyebab kegagalan awal ternyata **bukan** kredensial OpenChamber, tapi PAT fine-grained yang
