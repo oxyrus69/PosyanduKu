@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher foreground PosyanduKu: hati dengan tanda plus (KIA & pertolongan).
+     Grid 108dp, isi aman di 72dp tengah; satu warna, stroke round. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- hati penuh -->
+    <path
+        android:pathData="M54,78 C40,67 30,57 30,46 C30,37 37,30 46,30 C50,30 53,32 54,34 C55,32 58,30 62,30 C71,30 78,37 78,46 C78,57 68,67 54,78 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- palang plus di dalam hati (dicoak = warna background) -->
+    <path
+        android:pathData="M54,42 L54,60 M45,51 L63,51"
+        android:fillColor="#00000000"
+        android:strokeColor="#2E7D6B"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+</vector>

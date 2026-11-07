@@ -1,0 +1,44 @@
+# Android / Gradle
+.gradle/
+build/
+app/build/
+app/.cxx/
+local.properties
+*.iml
+.idea/
+.kotlin/
+.cxx/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Keystore & secrets (JANGAN commit)
+*.keystore
+*.jks
+keystore.properties
+secrets.properties
+.env
+.env.*
+
+# OS & tooling
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# OpenChamber / agent artefacts (screenshots uji, dsb.)
+screenshots/
+.openchamber/
+
+# APK & AAB hasil build (dikirim via Releases, bukan repo)
+*.apk
+*.aab
+output-metadata.json
+
+# Backup & diskarte
+*.bak
+*.sql
+~$*
