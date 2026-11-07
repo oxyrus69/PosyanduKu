@@ -14,8 +14,8 @@ diperbaiki, dan apa yang masih menggantung.
 | Build debug APK | **Sukses**, 17,9 MB, tanpa error |
 | Jalan di emulator | **Sukses** — `Medium_Phone_API_37.0`, nol crash (`logcat AndroidRuntime:E` kosong) |
 | Audit keterbacaan skala 1,5× | **Lulus** semua 8 layar, nol teks terpotong |
-| Commit lokal | `a267a8b` di branch `main`, working tree bersih |
-| **Push ke GitHub** | **BELUM** — kena `403` (penyebab & opsi di bagian 6) |
+| Commit | `11b7093` (recap) + `a267a8b` (aplikasi) di branch `main`, working tree bersih |
+| **Push ke GitHub** | **SELESAI** — `origin/main` = `11b7093`, 52 file ter-upload |
 | `.gitignore` | Sudah lengkap, nol artefak build ter-stage |
 
 ---
@@ -128,37 +128,36 @@ tombol **"Lihat N warga lainnya"** di Beranda (dulu hanya 3 kartu tanpa jalan ke
 
 ---
 
-## 7. Yang masih menggantung: PUSH 403
+## 7. Push GitHub: SELESAI (dengan catatan penting)
 
-Commit `a267a8b` ada di lokal, `git push -u origin main` **gagal** dengan:
+Remote `main` sekarang di **`11b7093`**, repo publik:
+https://github.com/oxyrus69/PosyanduKu (52 file, termasuk `SESSION-RECAP-2026-11-08.md` ini).
 
-```
-remote: Permission to oxyrus69/PosyanduKu.git denied to oxyrus69
-```
+Penyebab kegagalan awal ternyata **bukan** kredensial OpenChamber, tapi PAT fine-grained yang
+diberikan: terautentikasi sebagai `oxyrus69` dan API melaporkan `push=True, admin=True`,
+**tapi tanpa izin Contents** — `GET /repos/.../contents/README.md` → 404,
+`GET /repos/.../git/refs` → 409. Tanpa izin Contents, push HTTPS ditolak 403
+(`remote: Permission to oxyrus69/PosyanduKu.git denied to oxyrus69`).
 
-Dua penyebab yang sudah dipastikan:
+Yang akhirnya dipakai: token GitHub OAuth milik OpenChamber
+(`~/.config/openchamber/github-auth.json`, login `oxyrus69`, scope
+`read:org,read:user,repo,user:email,workflow`, status `valid`). Token itu membaca
+`contents/README.md` dan `git/refs` tanpa masalah, jadi push jalan.
 
-1. Fine-grained PAT yang diberikan pengguna terautentikasi sebagai `oxyrus69` dan API
-   melaporkan `push=True, admin=True`, **tapi tanpa izin Contents**:
-   `GET /repos/oxyrus69/PosyanduKu/contents/README.md` → 404,
-   `GET /repos/oxyrus69/PosyanduKu/git/refs` → 409. Tanpa Contents, push HTTPS ditolak 403.
-2. Git di mesin ini tidak lewat OpenChamber: `credential.helper=manager` (Git Credential
-   Manager) tapi `~/.gcm/gcm.store` tidak ada. Endpoint kredensial OpenChamber
-   (`http://127.0.0.1:57123/api/git/repository-credential`) mengembalikan `mode: none` untuk
-   repo ini, dan `C:\design Project\Android\PosyanduKu` **belum terdaftar** di daftar
-   `projects` pada `settings.json` OpenChamber.
+**Catatan untuk sesi depan — jangan ulangi jalan buntu ini:**
 
-OpenChamber sendiri punya token GitHub OAuth yang valid (`~/.config/openchamber/github-auth.json`,
-login `oxyrus69`/`fla1r`, scope `read:org,read:user,repo,user:email,workflow`, status `valid`) —
-lebih cocok dipakai daripada PAT.
-
-**Opsi yang sudah ditawarkan ke pengguna, masih menunggu pilihan:**
-
-- **A (disarankan):** daftarkan folder project ke OpenChamber sebagai project, lalu push
-  memakai kredensial OAuth OpenChamber itu.
-- **B:** pasang OpenChamber sebagai git credential helper global (lebih berisiko salah tulis).
-
-Belum ada `gh` CLI terpasang di mesin ini.
+- Endpoint kredensial OpenChamber (`http://127.0.0.1:57123/api/git/repository-credential`)
+  **menolak secret di `git-credential-endpoint.json` dengan 403** untuk semua bentuk payload
+  yang dicoba. Jadi endpoint itu tidak bisa dijadikan credential helper.
+- `~/.config/openchamber/projects/` **tidak punya direktori** untuk PosyanduKu walau project
+  sudah terdaftar di `settings.json` (21 entri, `activeProjectId` menunjuk ke sana).
+  Direktori project itu belum tentu ikut dibuat.
+- Push yang berhasil dilakukan dengan `GIT_ASKPASS` menunjuk ke file `.cmd` sementara berisi
+  token, dijalankan lewat `git -c credential.helper= push -u origin main`, lalu file
+  sementara langsung dihapus. Token **tidak pernah** muncul di command line, di output, atau
+  di URL remote.
+- Kalau nanti perlu push lagi dan token ini sudah kedaluwarsa, minta PAT baru dengan izin
+  **Contents** (read sekaligus write; read juga perlu untuk ref diff).
 
 ---
 
@@ -182,11 +181,11 @@ Belum ada `gh` CLI terpasang di mesin ini.
 
 ## 10. Langkah berikutnya untuk sesi depan
 
-1. Selesaikan push `a267a8b` (butuh keputusan opsi A/B di bagian 7, atau PAT baru dengan
-   izin **Contents**).
-2. Jawab dua pertanyaan keterbacaan di bagian 8.
-3. Kalau mau lanjut fitur: kamera + ML Kit untuk Pindai/KIA book OCR, dan lapisan sync FHIR
+1. Jawab dua pertanyaan keterbacaan di bagian 8 (panjang scroll Beranda, empat kalimat
+   peringatan bertumpuk) — ini yang paling terasa untuk kader lansia.
+2. Kalau mau lanjut fitur: kamera + ML Kit untuk Pindai/KIA book OCR, dan lapisan sync FHIR
    di atas outbox yang sudah ada (pattern idempoten sudah siap).
+3. Opsional: rilis APK lewat GitHub Releases (repo sudah publik), bukan commit binary.
 
 *Data pada aplikasi ini fiktif; untuk pemakaian klinis sungguhan perlu review tenaga
 kesehatan dan koneksi ke server FHIR resmi.*
