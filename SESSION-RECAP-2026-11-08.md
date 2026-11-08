@@ -14,8 +14,8 @@ diperbaiki, dan apa yang masih menggantung.
 | Build debug APK | **Sukses**, 17,9 MB, tanpa error |
 | Jalan di emulator | **Sukses** — `Medium_Phone_API_37.0`, nol crash (`logcat AndroidRuntime:E` kosong) |
 | Audit keterbacaan skala 1,5× | **Lulus** semua 8 layar, nol teks terpotong |
-| Commit | `7bb91b0` (recap final) + `a267a8b` (aplikasi) di branch `main`, working tree bersih |
-| **Push ke GitHub** | **SELESAI** — `origin/main` = `7bb91b0`, 52 file ter-upload |
+| Commit | `57205ad` (redesain Beranda) + `7bb91b0`/`a267a8b` di branch `main`, working tree bersih |
+| **Push ke GitHub** | **SELESAI** — `origin/main` = `57205ad` |
 | `.gitignore` | Sudah lengkap, nol artefak build ter-stage |
 
 ---
@@ -161,11 +161,14 @@ Yang akhirnya dipakai: token GitHub OAuth milik OpenChamber
 
 ---
 
-## 8. Dua pertanyaan terbuka (belum dijawab pengguna)
+## 8. Dua pertanyaan terbuka — SUDAH DIJAWAB
 
-1. Beranda dengan 15 kartu "Perlu tindakan hari ini" jadi panjang saat di-scroll — pertahankan
-   atau pangkas tampilan awal?
-2. Empat kalimat peringatan bertumpuk di Beranda — digabung atau dibiarkan?
+Keduanya dibereskan di sesi lanjutan; lihat bagian 11.
+
+1. Beranda dengan 15 kartu "Perlu tindakan hari ini" → dipangkas jadi 2 kartu + tombol
+   "Lihat 13 warga lainnya" yang membuka Sasaran terfilter.
+2. Empat kalimat peringatan bertumpuk di Beranda → diganti satu headline
+   "Panggil 15 warga hari ini".
 
 ---
 
@@ -181,11 +184,80 @@ Yang akhirnya dipakai: token GitHub OAuth milik OpenChamber
 
 ## 10. Langkah berikutnya untuk sesi depan
 
-1. Jawab dua pertanyaan keterbacaan di bagian 8 (panjang scroll Beranda, empat kalimat
-   peringatan bertumpuk) — ini yang paling terasa untuk kader lansia.
-2. Kalau mau lanjut fitur: kamera + ML Kit untuk Pindai/KIA book OCR, dan lapisan sync FHIR
+1. Kalau mau lanjut fitur: kamera + ML Kit untuk Pindai/KIA book OCR, dan lapisan sync FHIR
    di atas outbox yang sudah ada (pattern idempoten sudah siap).
-3. Opsional: rilis APK lewat GitHub Releases (repo sudah publik), bukan commit binary.
+2. Opsional: rilis APK lewat GitHub Releases (repo sudah publik), bukan commit binary.
+3. Beranda, Warga, dan Pengaturan sudah dirapikan pada commit `57205ad`; kalau pola
+   "satu perintah per layar" mau diperluas, Pindai masih placeholder dan Kunjungan masih
+   padat (lihat bagian 11 untuk konteks).
+
+---
+
+## 11. Sesi lanjutan: redesain Beranda (8 Nov 2026, commit `57205ad`)
+
+Dua keluhan keterbacaan Beranda di bagian 8 sudah dibereskan, plus temuan baru.
+
+**Peringatan bertumpuk → satu perintah.** Dulu satu layar memuat empat kalimat
+penjelas: judul "Perlu tindakan hari ini (15)", "Dahulukan yang Rujuk & yang sudah
+lama tak ditimbang", "Rujukan belum ditindak", "Belum pernah dicatat" — dan angka 15
+muncul tiga kali (KPI, judul, kata "15 warga"). Sekarang satu headline besar:
+**"Panggil 15 warga hari ini"**. Kalimat bantuan hanya muncul saat daftar kosong
+("Semua aman hari ini" + "Tidak ada yang perlu dipanggil"). Dua section di bawahnya
+cukup judul tanpa anak kalimat.
+
+**Scroll panjang → tiga bentang layar.** Daftar tindakan dipangkas jadi **2 kartu**
+lalu satu tombol **"Lihat 13 warga lainnya"**; imunisasi dibatasi 3 baris. Sebelumnya
+15 kartu + 4 baris imunisasi dalam satu scroll terus-menerus (7–8 layar).
+
+**Perubahan pendukung:**
+- Tombol "Lihat N" membuka **Sasaran** dengan filter *Perlu tindakan* sudah menyala,
+  lewat route baru `list?filter=pantau`. Tab Warga di bottom nav tetap membuka daftar
+  penuh (20 sasaran) — filter hanya aktif bila datang dari Beranda.
+- Chip besar **"Perlu tindakan"** ditambahkan di Sasaran; baris hitung jadi
+  "15 sasaran • Hanya yang perlu tindakan".
+- Settings: dua kalimat penjelas dihapus ("Semakin besar, semakin mudah dibaca",
+  paragraf sinkronisasi), label baris dipendekkan ("Belum terkirim ke server").
+  Detail tidak diubah: satu-satunya kalimat di sana adalah `alasan` per kartu
+  ("Rujukan belum ditindak"), yang memang harus ada.
+- Sambutan panjang ("Assalamu'alaikum," + "Kader Posyandu" besar + tanggal penuh)
+  jadi satu baris: "Kader Posyandu • 8 November".
+- KPI tetap sesuai keputusan pengguna: Warga/KK hijau container, hanya Pantau yang
+  kuning perhatian.
+
+**Bug baru yang ketemu dan diperbaiki — bottom bar ungu.** Rol permukaan Material 3
+belum diisi di `lightColorScheme`, jadi `NavigationBar` jatuh ke `surfaceContainer`/
+`secondaryContainer` **default M3 (lavender)**. Ini melanggar identitas hijau
+sekaligus aturan anti-purple. `Color.kt` kini mendefinisikan `SurfaceContainerLowest/
+Low/Container/High/Highest`, `SecondaryContainer`, `OnSecondaryContainer`,
+`OutlineVariant`; `Theme.kt` memasangnya termasuk `surfaceBright/Dim` dan
+`inverseSurface`. Selektor ikon nav (`isSystemInDarkTheme` yang tak terpakai) dihapus
+dengan alasan jelas: `enableEdgeToEdge()` dari ComponentActivity sudah mengurus warna
+ikon system bar.
+
+**Kepatuhan edge-to-edge (wajib skill `edge-to-edge`):** `enableEdgeToEdge()` ditambah
+di `MainActivity.onCreate` sebelum `setContent`, plus
+`window.isNavigationBarContrastEnforced = false` untuk SDK 29+. `AndroidManifest.xml`
+sudah `adjustResize` sejak awal, jadi IME tidak menutup field. `Scaffold` di `RootNav`
+meneruskan `PaddingValues` ke `Box` konten. Bonus: `Icons.Filled.List` → 
+`Icons.AutoMirrored.Filled.List` (menghapus warning deprecation).
+
+**Hasil verifikasi ulang (bukan asumsi):**
+- Build debug hijau (29–43 s), nol error; nol crash (`AndroidRuntime:E` kosong).
+- Audit `uiautomator` bounds pada skala **1×, 1.25×, dan 1.5×**: nol teks terpotong,
+  nol overflow kanan.
+- Filter Perlu tindakan terbukti **15 sasaran** (dicocokkan lewat log sementara
+  `onlyPantau=true all=20 flags=[RUJUK, PERHATIAN, OKE] shown=15`); tab Warga
+  **20 sasaran**.
+- Diverifikasi visual: Beranda 1× & 1.5×, Sasaran terfilter, Detail, Kunjungan,
+  Pindai, Pengaturan — semua utuh; bottom bar kini hijau.
+- Emulator + adb dimatikan bersih; port 20128 (9router) tidak disentuh.
+
+**Catatan jebakan saat menguji:** setelah `adb shell pm clear`, aplikasi butuh
+~10–15 detik cold start (seed Room) dan sempat tampak "nyangkut di splash" — itu bukan
+crash, cukup tunggu. `uiautomator dump` juga kadang mengembalikan
+"null root node" saat app baru saja berpindah layar; tunggu 2–3 detik lalu ulangi.
+Ketika `pm clear` dijalankan, skala UI kembali ke default (Besar 1.25×), jadi
+koordinat tap dari sesi sebelumnya (1.5×) tidak valid lagi.
 
 *Data pada aplikasi ini fiktif; untuk pemakaian klinis sungguhan perlu review tenaga
 kesehatan dan koneksi ke server FHIR resmi.*
