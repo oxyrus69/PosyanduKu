@@ -3,6 +3,7 @@ package com.posyanduku.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,6 +21,11 @@ import com.posyanduku.app.feature.visit.VisitViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        // Agar NavigationBar (bottom) tidak ketutup scrim kontras otomatis 3-button nav.
+        // enableEdgeToEdge() menyetel ini true; kita matikan lagi agar warna bottom bar
+        // menyatu sampai tepi layar dan ikon nav tetap terbaca.
+        window.isNavigationBarContrastEnforced = false
         setContent {
             val prefs = remember { PrefsHolder.get(this) }
             val uiScale by prefs.uiScale.collectAsState(initial = UiScale.BESAR)

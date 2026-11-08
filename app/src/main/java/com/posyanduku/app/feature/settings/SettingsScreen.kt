@@ -27,9 +27,6 @@ fun SettingsScreen(vm: SettingsViewModel) {
         // Ukuran tampilan — pemilih besar & jelas
         Column {
             Text("Ukuran huruf & tombol", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(4.dp))
-            Text("Semakin besar, semakin mudah dibaca.", style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(12.dp))
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 UiScale.entries.forEach { opt ->
@@ -74,23 +71,17 @@ fun SettingsScreen(vm: SettingsViewModel) {
 
         // Kesiapan sinkron & penyimpanan lokal
         Column {
-            Text("Data & sinkronisasi", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text("Data tersimpan di HP ini", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(8.dp))
-            InfoRow("Tersimpan di perangkat", "${ui.targetCount} sasaran")
-            InfoRow("Menunggu dikirim ke server", "${ui.outboxCount} catatan")
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Aplikasi ini berfungsi penuh tanpa sinyal. Data tersimpan aman di HP dan menunggu antre untuk disinkronkan saat ada koneksi.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            InfoRow("Jumlah sasaran", "${ui.targetCount} sasaran")
+            InfoRow("Belum terkirim ke server", "${ui.outboxCount} catatan")
         }
 
         Column {
             Text("Tentang", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(8.dp))
             Text(
-                "PosyanduKu — demo aplikasi pencatatan Posyandu offline-first (pola rujukan: model FHIR/OpenSRP). Data pada pratinjau ini bersifat fiktif.",
+                "Demo pencatatan Posyandu yang berfungsi tanpa sinyal. Semua nama dan data pada pratinjau ini fiktif.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

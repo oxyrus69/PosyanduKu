@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -37,7 +37,8 @@ import com.posyanduku.app.feature.visit.VisitViewModel
 
 object Routes {
     const val HOME = "home"
-    const val LIST = "list"
+    const val LIST_PATTERN = "list?filter={filter}"
+    const val LIST_BASE = "list"
     const val SCAN = "scan"
     const val SETTINGS = "settings"
     const val REGISTER = "register"
@@ -47,6 +48,7 @@ object Routes {
     fun detail(id: String) = "detail/$id"
     fun visit(id: String) = "visit/$id"
     fun sdidtk(id: String) = "sdidtk/$id"
+    fun list(f: String? = null) = if (f != null) "list?filter=$f" else "list"
 }
 
 @Composable
@@ -58,24 +60,30 @@ fun RootNav(
 ) {
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
-    val current = backStack?.destination?.route ?: Routes.HOME
-    val showBottom = current in listOf(Routes.HOME, Routes.LIST, Routes.SCAN, Routes.SETTINGS)
+    val currentRoute = backStack?.destination?.route
+    val showBottom = currentRoute in listOf(Routes.HOME, Routes.LIST_PATTERN, Routes.SCAN, Routes.SETTINGS)
+    val isList = currentRoute == Routes.LIST_PATTERN
 
     Scaffold(
         bottomBar = {
             if (showBottom) {
                 NavigationBar(modifier = Modifier.height(96.dp)) {
-                    BottomItem("Utama", Icons.Filled.Home, current == Routes.HOME) {
+                    BottomItem("Utama", Icons.Filled.Home, currentRoute == Routes.HOME) {
                         nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true } }
                     }
-                    BottomItem("Warga", Icons.Filled.List, current == Routes.LIST) {
-                        nav.navigate(Routes.LIST)
+                    BottomItem("Warga", Icons.AutoMirrored.Filled.List, isList) {
+                        // Tab Warga selalu membuka daftar penuh; filter "Perlu tindakan"
+                        // hanya aktif bila datang dari Beranda lewat tombol Lihat N.
+                        listVm.setOnlyPantau(false)
+                        nav.navigate(Routes.list()) {
+                            popUpTo(Routes.HOME)
+                        }
                     }
-                    BottomItem("Pindai", Icons.Filled.QrCodeScanner, current == Routes.SCAN) {
-                        nav.navigate(Routes.SCAN)
+                    BottomItem("Pindai", Icons.Filled.QrCodeScanner, currentRoute == Routes.SCAN) {
+                        nav.navigate(Routes.SCAN) { popUpTo(Routes.HOME) }
                     }
-                    BottomItem("Atur", Icons.Filled.Settings, current == Routes.SETTINGS) {
-                        nav.navigate(Routes.SETTINGS)
+                    BottomItem("Atur", Icons.Filled.Settings, currentRoute == Routes.SETTINGS) {
+                        nav.navigate(Routes.SETTINGS) { popUpTo(Routes.HOME) }
                     }
                 }
             }
@@ -88,16 +96,22 @@ fun RootNav(
                         vm = homeVm,
                         onOpenTarget = { nav.navigate(Routes.detail(it)) },
                         onVisit = { nav.navigate(Routes.visit(it)) },
-                        onSeeAll = { nav.navigate(Routes.LIST) },
+                        onSeeAllPantau = { nav.navigate(Routes.list("pantau")) },
                         onRegister = { nav.navigate(Routes.REGISTER) },
+                        onSeeAll = { nav.navigate(Routes.list()) },
                     )
                 }
-                composable(Routes.LIST) {
+                composable(
+                    Routes.LIST_PATTERN,
+                    arguments = listOf(navArgument("filter") { type = NavType.StringType; nullable = true; defaultValue = null }),
+                ) { e ->
+                    val initialPantau = e.arguments?.getString("filter") == "pantau"
                     ListScreen(
                         vm = listVm,
                         onOpenTarget = { nav.navigate(Routes.detail(it)) },
                         onVisit = { nav.navigate(Routes.visit(it)) },
                         onRegister = { nav.navigate(Routes.REGISTER) },
+                        initialOnlyPantau = initialPantau,
                     )
                 }
                 composable(Routes.SCAN) { ScanScreen() }

@@ -16,17 +16,24 @@ fun ListScreen(
     onOpenTarget: (String) -> Unit,
     onVisit: (String) -> Unit,
     onRegister: () -> Unit,
+    initialOnlyPantau: Boolean = false,
 ) {
     val ui by vm.ui.collectAsState()
+    // Route menentukan kondisi awal; "Perlu tindakan" hanya menyala bila
+    // Beranda mengirim kita lewat tombol Lihat N warga lainnya.
+    LaunchedEffect(initialOnlyPantau) { vm.setOnlyPantau(initialOnlyPantau) }
 
     LazyColumn(
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            TypeFilterRow(selected = ui.filter, onSelect = {
-                vm.setFilter(it)
-            })
+            TypeFilterRow(
+                selected = ui.filter,
+                onSelect = { vm.setFilter(it) },
+                onlyPantau = ui.onlyPantau,
+                onToggleOnlyPantau = { vm.setOnlyPantau(it) },
+            )
         }
         item {
             OutlinedTextField(
@@ -39,12 +46,17 @@ fun ListScreen(
                 shape = RoundedCornerShape(14.dp),
             )
         }
-        item {
-            Text(
-                if (ui.loading) "Memuat..." else "${ui.shown.size} sasaran",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        if (!ui.loading) {
+            item {
+                Text(
+                    if (ui.onlyPantau && ui.filter == null)
+                        "${ui.shown.size} sasaran • Hanya yang perlu tindakan"
+                    else
+                        "${ui.shown.size} sasaran",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         items(ui.shown, key = { it.target.id }) { s ->
             TargetCard(s, onOpen = { onOpenTarget(s.target.id) }, onVisit = { onVisit(s.target.id) })

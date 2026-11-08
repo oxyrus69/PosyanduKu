@@ -21,6 +21,7 @@ import com.posyanduku.app.data.db.TargetEntity
 import com.posyanduku.app.ui.FlagChip
 import com.posyanduku.app.ui.StatusStrip
 import com.posyanduku.app.ui.subtitle
+import com.posyanduku.app.ui.theme.Warning
 import com.posyanduku.app.ui.typeIcon
 import com.posyanduku.app.ui.umurLabel
 
@@ -75,24 +76,40 @@ fun TargetCard(
 
 /** Filter chip besar pemilih kelompok sasaran (digulir horizontal). */
 @Composable
-fun TypeFilterRow(selected: TargetType?, onSelect: (TargetType?) -> Unit) {
+fun TypeFilterRow(
+    selected: TargetType?,
+    onSelect: (TargetType?) -> Unit,
+    onlyPantau: Boolean = false,
+    onToggleOnlyPantau: ((Boolean) -> Unit)? = null,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
     ) {
         FilterChip(
-            label = "Semua", selected = selected == null,
-            onClick = { onSelect(null) },
+            label = "Semua", selected = selected == null && !onlyPantau,
+            onClick = { onSelect(null); onToggleOnlyPantau?.invoke(false) },
         )
+        if (onToggleOnlyPantau != null) {
+            FilterChip(
+                label = "Perlu tindakan",
+                selected = onlyPantau,
+                selectedColor = Warning,
+                onClick = { onSelect(null); onToggleOnlyPantau.invoke(!onlyPantau) },
+            )
+        }
         TargetType.entries.sortedBy { it.urutan }.forEach { t ->
-            FilterChip(t.label, selected = selected == t, onClick = { onSelect(t) })
+            FilterChip(t.label, selected = selected == t && !onlyPantau, onClick = { onSelect(t); onToggleOnlyPantau?.invoke(false) })
         }
     }
 }
 
 @Composable
-private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+private fun FilterChip(
+    label: String, selected: Boolean, onClick: () -> Unit,
+    selectedColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+) {
+    val bg = if (selected) selectedColor else MaterialTheme.colorScheme.surfaceVariant
     val fg = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Box(
         Modifier

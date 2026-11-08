@@ -1,6 +1,5 @@
 package com.posyanduku.app.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -28,15 +27,27 @@ private val LightColors = lightColorScheme(
     onPrimaryContainer = OnPrimaryContainer,
     secondary = PrimaryDark,
     onSecondary = OnPrimary,
+    secondaryContainer = SecondaryContainer,
+    onSecondaryContainer = OnSecondaryContainer,
     surface = Surface,
     background = Background,
     surfaceVariant = SurfaceVariant,
     onSurface = OnSurface,
     onSurfaceVariant = OnSurfaceVariant,
     outline = Outline,
+    outlineVariant = OutlineVariant,
     error = Danger,
     onError = OnDanger,
     errorContainer = DangerContainer,
+    surfaceBright = Surface,
+    surfaceDim = SurfaceContainer,
+    surfaceContainerLowest = SurfaceContainerLowest,
+    surfaceContainerLow = SurfaceContainerLow,
+    surfaceContainer = SurfaceContainer,
+    surfaceContainerHigh = SurfaceContainerHigh,
+    surfaceContainerHighest = SurfaceContainerHighest,
+    inverseSurface = OnSurface,
+    inverseOnSurface = Surface,
 )
 
 @Composable
@@ -45,7 +56,8 @@ fun PosyanduKuTheme(
     content: @Composable () -> Unit,
 ) {
     // Sengaja hanya light: pengguna target butuh kontras maksimal & konsistensi.
-    val dark = isSystemInDarkTheme()
+    // enableEdgeToEdge() dari ComponentActivity mengurus warna ikon system bar
+    // otomatis, jadi di sini kita tidak menyetel isAppearanceLight*Bar lagi.
     CompositionLocalProvider(LocalUiScale provides uiScale) {
         MaterialTheme(
             colorScheme = LightColors,

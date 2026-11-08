@@ -13,12 +13,16 @@ data class ListUi(
     val loading: Boolean = true,
     val all: List<TargetSummary> = emptyList(),
     val filter: TargetType? = null,
+    val onlyPantau: Boolean = false,
     val query: String = "",
 ) {
-    val shown: List<TargetSummary> get() = all.filter { s ->
-        (filter == null || s.target.type == filter) &&
-        (query.isBlank() || s.target.nama.contains(query, true) || s.target.type.label.contains(query, true))
-    }.sortedBy { it.target.nama }
+    val shown: List<TargetSummary> get() = all
+        .asSequence()
+        .filter { s -> (filter == null || s.target.type == filter) }
+        .filter { s -> (!onlyPantau || s.flag != com.posyanduku.app.data.StatusFlag.OKE) }
+        .filter { s -> (query.isBlank() || s.target.nama.contains(query, true) || s.target.type.label.contains(query, true)) }
+        .sortedBy { it.target.nama }
+        .toList()
 }
 
 class ListViewModel(app: Application) : AndroidViewModel(app) {
@@ -37,5 +41,6 @@ class ListViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setFilter(t: TargetType?) = _ui.update { it.copy(filter = t) }
+    fun setOnlyPantau(p: Boolean) = _ui.update { it.copy(onlyPantau = p) }
     fun setQuery(q: String) = _ui.update { it.copy(query = q) }
 }

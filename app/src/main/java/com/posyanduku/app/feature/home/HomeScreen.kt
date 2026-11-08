@@ -1,7 +1,6 @@
 package com.posyanduku.app.feature.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,9 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.posyanduku.app.data.StatusFlag
-import com.posyanduku.app.data.TargetType
 import com.posyanduku.app.feature.list.TargetCard
-import com.posyanduku.app.ui.StatusStrip
 import com.posyanduku.app.ui.flagColors
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -25,34 +22,31 @@ fun HomeScreen(
     vm: HomeViewModel,
     onOpenTarget: (String) -> Unit,
     onVisit: (String) -> Unit,
-    onSeeAll: () -> Unit,
+    onSeeAllPantau: () -> Unit,
     onRegister: () -> Unit,
+    onSeeAll: () -> Unit,
 ) {
     val ui by vm.ui.collectAsState()
     LaunchedEffect(Unit) { vm.load() }
+
+    val urgent = ui.sum.filter { it.flag != StatusFlag.OKE }
+    val greeting = ui.kader?.let { "Kader $it" } ?: "Kader Posyandu"
+    val today = java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM", Locale("id")))
 
     LazyColumn(
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        // ---- Sambutan singkat: siapa + tanggal, satu baris rasa hening ----
         item {
-            Column {
-                Text("Assalamu'alaikum,", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(
-                    ui.kader?.let { "Kader $it" } ?: "Kader Posyandu",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale("id"))),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            Text(
+                "$greeting • $today",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
-        // ---- Ringkasan besar ----
+        // ---- Ringkasan ----
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 KpiBig("Warga", ui.sasaran.toString(), Modifier.weight(1f))
@@ -62,37 +56,45 @@ fun HomeScreen(
             }
         }
 
-        // ---- Perlu tindakan hari ini ----
+        // ---- Jawaban satu kalimat untuk "siapa yang kupanggil hari ini" ----
         item {
-            val urgent = ui.sum.filter { it.flag != StatusFlag.OKE }
-            Column {
+            if (urgent.isEmpty()) {
+                Column {
+                    Text(
+                        "Semua aman hari ini",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Tidak ada yang perlu dipanggil.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
                 Text(
-                    if (urgent.isEmpty()) "Semua terkendali hari ini"
-                    else "Perlu tindakan hari ini (${urgent.size})",
-                    style = MaterialTheme.typography.titleLarge,
+                    "Panggil ${urgent.size} warga hari ini",
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
-                if (urgent.isNotEmpty()) {
-                    Spacer(Modifier.height(4.dp))
-                    Text("Dahulukan yang 'Rujuk' & yang sudah lama tak ditimbang.",
-                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
             }
         }
 
-        val urgentList = ui.sum.filter { it.flag != StatusFlag.OKE }
-        items(urgentList.take(3), key = { it.target.id }) { s ->
+        // ---- Hanya dua kartu yang langsung bisa ditekan; sisanya lewat tombol ----
+        items(urgent.take(2), key = { it.target.id }) { s ->
             TargetCard(s, onOpen = { onOpenTarget(s.target.id) }, onVisit = { onVisit(s.target.id) })
         }
-        if (urgentList.size > 3) {
+        if (urgent.isNotEmpty()) {
             item {
                 OutlinedButton(
-                    onClick = onSeeAll,
+                    onClick = onSeeAllPantau,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Text(
-                        "Lihat ${urgentList.size - 3} warga lainnya",
+                        if (urgent.size > 2) "Lihat ${urgent.size - 2} warga lainnya"
+                        else "Lihat daftar pantau",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -100,23 +102,22 @@ fun HomeScreen(
             }
         }
 
-        // ---- Jadwal imunisasi dekat ----
+        // ---- Imunisasi jatuh tempo ----
         item {
-            Column {
-                Text("Jadwal imunisasi mendekat", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(4.dp))
+            Text(
+                "Imunisasi jatuh tempo",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        val jadwal = ui.imunisasi.take(3)
+        if (jadwal.isEmpty()) {
+            item {
                 Text(
-                    "Yang jatuh tempo dalam 30 hari. Bawa ke Posyandu bila belum diberi.",
+                    "Tidak ada jadwal 30 hari ke depan.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-        }
-        val jadwal = ui.imunisasi.take(4)
-        if (jadwal.isEmpty()) {
-            item {
-                Text("Tidak ada jadwal dekat.", style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             items(jadwal, key = { it.second.id }) { (t, im) ->
@@ -171,8 +172,8 @@ private fun KpiBig(label: String, value: String, modifier: Modifier = Modifier, 
 @Composable
 private fun ImmunRow(nama: String, vaksin: String, jadwal: java.time.LocalDate) {
     val now = java.time.LocalDate.now()
-    val lain = jadwal.until(now).days
-    val telat = jadwal.isBefore(now)
+    val hariMenuju = jadwal.toEpochDay() - now.toEpochDay()
+    val telat = hariMenuju < 0
     val (bg, fg) = if (telat) flagColors(StatusFlag.PERHATIAN) else flagColors(StatusFlag.OKE)
     Row(
         Modifier
@@ -187,10 +188,11 @@ private fun ImmunRow(nama: String, vaksin: String, jadwal: java.time.LocalDate) 
         }
         Column(horizontalAlignment = Alignment.End) {
             if (telat) {
-                Text("LEWAT ${-lain} HR", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = fg)
+                Text("Terlambat", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = fg)
+            } else if (hariMenuju == 0L) {
+                Text("Hari ini", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = fg)
             } else {
-                val d = jadwal.until(java.time.LocalDate.now()).days
-                Text("${-d} hari lagi", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = fg)
+                Text("$hariMenuju hari lagi", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = fg)
             }
             Text(jadwal.format(DateTimeFormatter.ofPattern("d MMM", Locale("id"))),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

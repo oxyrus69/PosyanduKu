@@ -16,6 +16,18 @@ val OnSurface = Color(0xFF1C2422)
 val OnSurfaceVariant = Color(0xFF4A5754)
 val Outline = Color(0xFF9BB0AA)
 
+// Rol permukaan Material 3 yang dipakai NavigationBar / Card / Sheet.
+// Tanpa ini, M3 jatuh ke default lavender dan bottom bar jadi ungu
+// (melenceng dari identitas hijau sekaligus melanggar aturan anti-purple).
+val SurfaceContainerLowest = Color(0xFFFFFFFF)
+val SurfaceContainerLow = Color(0xFFF7FAF9)
+val SurfaceContainer = Color(0xFFF1F6F4)
+val SurfaceContainerHigh = Color(0xFFEBF1EF)
+val SurfaceContainerHighest = Color(0xFFE5EDEA)
+val SecondaryContainer = Color(0xFFD6EAE2)
+val OnSecondaryContainer = Color(0xFF14382F)
+val OutlineVariant = Color(0xFFC7D6D1)
+
 val Success = Color(0xFF2E7D32)
 val OnSuccess = Color(0xFFFFFFFF)
 val SuccessContainer = Color(0xFFDFF0DD)
